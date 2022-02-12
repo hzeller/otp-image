@@ -18,9 +18,10 @@
 
 #include "ppm-reader.h"
 
-#include <string.h>
-#include <stdlib.h>
 #include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 static const char *skipWhitespace(const char *buffer, const char *end) {
     for (;;) {
@@ -54,7 +55,8 @@ const rgb_t *ReadImageData(const char *in_buffer, size_t buf_len,
                            struct ImageMetaInfo *info) {
     if (in_buffer[0] != 'P' || in_buffer[1] != '6' ||
         (!isspace(in_buffer[2]) && in_buffer[2] != '#')) {
-        return nullptr;  // raw image. No P6 magic header.
+        fprintf(stderr, "Only raw PPM files are supported (P6 header)\n");
+        return nullptr;  // No P6 magic header.
     }
     const char *const end = in_buffer + buf_len;
     const char *parse_buffer = in_buffer + 2;

@@ -62,16 +62,16 @@
 } def
 
 % Given an array named /data, cut all the bits.
-% This is decomposing it into horizontal and vertial scanning lines to be
-% cut to minimize direction changes in the laser cutter.
+% This is decomposing it into horizontal and vertial cutting lines
+% to minimize direction changes in the laser cutter.
 /cut-array {
-    % horizontal lines, upper line
+    % horizontal lines
     0 1 height 1 sub {
 	/y exch def
 	0 y dy mul neg moveto
 	0 overcut 2 div neg rmoveto
 	/row-index y width mul def
-	% forward
+	% forward, upper line
 	0 1 width 1 sub {
 	    /x exch def
 	    /index x row-index add def
@@ -85,7 +85,7 @@
 	    } ifelse
 	    gap 0 rmoveto
 	} for
-	% backward
+	% backward, lower line
 	0 hole-h neg overcut add rmoveto
 	0 1 width 1 sub {
 	    width 1 sub exch sub /x exch def
@@ -103,13 +103,13 @@
 	stroke
     } for
 
-    % vertical lines, negative
+    % vertical lines
     0 1 width 1 sub {
 	/x exch def
 	x dx mul overcut 2 div add 0 moveto
 	/x-offset x def
 
-	% negative
+	% negative, first edge
 	0 1 height 1 sub {
 	    /y exch def
 	    /index y width mul x-offset add def
@@ -122,7 +122,7 @@
 	    0 gap neg rmoveto
 	} for
 
-	% negative backwards
+	% negative, second edge backwards
 	hole-w overcut sub 0 rmoveto
 	0 1 height 1 sub {
 	    height 1 sub exch sub /y exch def
@@ -137,7 +137,7 @@
 	} for
 
 	overcut 0 rmoveto
-	% positive
+	% positive, first edge
 	0 1 height 1 sub {
 	    /y exch def
 	    /index y width mul x-offset add def
@@ -150,7 +150,7 @@
 	    0 gap neg rmoveto
 	} for
 
-	% positive backwards
+	% positive, second edge backwards
 	hole-w overcut sub 0 rmoveto
 	0 1 height 1 sub {
 	    height 1 sub exch sub /y exch def
@@ -165,11 +165,10 @@
 	} for
 	stroke
     } for
-
 } def
 
 /page-setup {
-    25 bounding-box-height translate
+    25 top-edge translate
     0 setlinewidth
 } def
 

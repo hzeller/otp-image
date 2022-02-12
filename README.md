@@ -31,7 +31,7 @@ Synopsis
 ```
 Usage:
 ./otp-image <key> <ppm-file>
-Reasonable image size is somewhere around 60x40px
+Reasonable image size is somewhere around <= 60x40px
 ```
 
 Example
