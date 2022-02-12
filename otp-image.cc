@@ -98,11 +98,7 @@ int main(int argc, char **argv) {
     // First, create key array
     key_sequence.Reset();
     for (int y = 0; y < meta.height; ++y) {
-        if (y == 0) {
-            fprintf(out, "/data [");
-        } else {
-            fprintf(out, "\n       ");
-        }
+        fprintf(out, y == 0 ? "/data [" : "\n       ");
         for (int x = 0; x < meta.width; ++x) {
             fprintf(out, " %d", key_sequence.NextBool());
         }
@@ -120,11 +116,7 @@ showpage
     fprintf(out, "%s Image %d\n", "%%Page:", page++);
     key_sequence.Reset();
     for (int y = 0; y < meta.height; ++y) {
-        if (y == 0) {
-            fprintf(out, "/data [");
-        } else {
-            fprintf(out, "\n       ");
-        }
+        fprintf(out, y == 0 ? "/data [" : "\n       ");
         for (int x = 0; x < meta.width; ++x) {
             bool bit = image[y * meta.width + x].r < 128;
             bit ^= kInvert;
