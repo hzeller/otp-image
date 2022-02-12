@@ -37,7 +37,7 @@ class KeySequence {
 public:
     KeySequence(const std::string &key) : is_empty_(key.empty()),
                                           seed_(std::hash<std::string>{}(key)) {
-        if (is_empty_) fprintf(stderr, "== empty key! ==\n");
+        if (is_empty_) fprintf(stderr, "== Note: empty key! ==\n");
     }
 
     void Reset() { srand(seed_); }

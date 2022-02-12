@@ -60,12 +60,12 @@ const rgb_t *ReadImageData(const char *in_buffer, size_t buf_len,
     parse_buffer = readNextNumber(parse_buffer, end, &info->width);
     parse_buffer = readNextNumber(parse_buffer, end, &info->height);
     parse_buffer = readNextNumber(parse_buffer, end, &info->range);
-    if (!parse_buffer) return nullptr;
+    if (!parse_buffer || parse_buffer >= end) return nullptr;
     if (!isspace(*parse_buffer++)) return nullptr;  // one space before data
     // Now make sure that the rest of the buffer still makes sense
     const size_t expected_image_data = info->width * info->height * 3;
     const size_t actual_data = end - parse_buffer;
-    if (actual_data < expected_image_data)
-        return nullptr;   // Uh, not enough data.
+    if (expected_image_data == 0 || actual_data < expected_image_data)
+        return nullptr;   // Uh, zero image or not enough data.
     return reinterpret_cast<const rgb_t*>(parse_buffer);
 }
