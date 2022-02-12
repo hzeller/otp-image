@@ -27,12 +27,10 @@ struct ImageMetaInfo {
     int range;  // Range of gray-levels. We only handle 255 correctly(=1byte)
 };
 
-// Given an input buffer + size with a PPM file, extract the image
+// Given an input buffer + size with a raw PPM file, extract the image
 // meta information and return it in "info_out".
 // Return pointer to raw image data with uint8 [r,g,b] tuples (memory is
 // still owned by "in_buffer".
-// Returns nullptr if conversion failed.
-// Image info is left untouched when image does not contain any
-// information.
+// Returns nullptr if reading failed.
 const rgb_t *ReadImageData(const char *in_buffer, size_t buf_len,
                            struct ImageMetaInfo *info_out);

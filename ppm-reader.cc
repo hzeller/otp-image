@@ -25,30 +25,27 @@
 
 static const char *skipWhitespace(const char *buffer, const char *end) {
     for (;;) {
-        while (buffer < end && isspace(*buffer))
-            ++buffer;
-        if (buffer >= end)
-            return NULL;
+        while (buffer < end && isspace(*buffer)) ++buffer;
+        if (buffer >= end) return nullptr;
         if (*buffer == '#') {
-            while (buffer < end && *buffer != '\n') // read to end of line.
-                ++buffer;
+            while (buffer < end && *buffer != '\n') ++buffer; // EOL comment
             continue;  // Back to whitespace eating.
         }
         return buffer;
     }
 }
 
-// Read next number. Start reading at *start; modifies the *start pointer
-// to point to the character just after the decimal number or NULL if reading
-// was not successful.
-static int readNextNumber(const char **start, const char *end) {
-    const char *start_number = skipWhitespace(*start, end);
-    if (start_number == NULL) { *start = NULL; return 0; }
-    char *end_number = NULL;
-    int result = strtol(start_number, &end_number, 10);
-    if (end_number == start_number) { *start = NULL; return 0; }
-    *start = end_number;
-    return result;
+// Read next number. Returns end of number on success or nullptr if no number
+// could be read. If start is already nullptr, returns nullptr.
+static const char* readNextNumber(const char *start, const char *end,
+                                  int *result) {
+    if (!start) return nullptr;
+    const char *start_number = skipWhitespace(start, end);
+    if (!start_number) return nullptr;
+    char *end_number = nullptr;
+    *result = strtol(start_number, &end_number, 10);
+    if (end_number == start_number) return nullptr;
+    return end_number;
 }
 
 const rgb_t *ReadImageData(const char *in_buffer, size_t buf_len,
@@ -59,21 +56,16 @@ const rgb_t *ReadImageData(const char *in_buffer, size_t buf_len,
         return nullptr;  // No P6 magic header.
     }
     const char *const end = in_buffer + buf_len;
-    const char *parse_buffer = in_buffer + 2;
-    const int width = readNextNumber(&parse_buffer, end);
-    if (parse_buffer == NULL) return nullptr;
-    const int height = readNextNumber(&parse_buffer, end);
-    if (parse_buffer == NULL) return nullptr;
-    const int range = readNextNumber(&parse_buffer, end);
-    if (parse_buffer == NULL) return nullptr;
-    if (!isspace(*parse_buffer++)) return nullptr;   // last char before data
+    const char *parse_buffer = in_buffer + 2;  // Skipping P6 header
+    parse_buffer = readNextNumber(parse_buffer, end, &info->width);
+    parse_buffer = readNextNumber(parse_buffer, end, &info->height);
+    parse_buffer = readNextNumber(parse_buffer, end, &info->range);
+    if (!parse_buffer) return nullptr;
+    if (!isspace(*parse_buffer++)) return nullptr;  // one space before data
     // Now make sure that the rest of the buffer still makes sense
-    const size_t expected_image_data = width * height * 3;
+    const size_t expected_image_data = info->width * info->height * 3;
     const size_t actual_data = end - parse_buffer;
     if (actual_data < expected_image_data)
         return nullptr;   // Uh, not enough data.
-    info->width = width;
-    info->height = height;
-    info->range = range;
     return reinterpret_cast<const rgb_t*>(parse_buffer);
 }
