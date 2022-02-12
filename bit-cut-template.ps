@@ -1,0 +1,188 @@
+% (CC-BY-SA) H.Zeller 2022-02-08
+
+% Cutting 'bits' from cardboard.
+% Each optical bit is represented in a square area, of which either the left
+% or right part cut out: [# ]=0,  [ #]=1
+%
+% If overlayed, cut-outs that overlap let light shine through, while if they
+% are on opposing blocks, nothing can be seen. So only if both bits are the
+% same, the overlayed output will let light through, behaving as optical
+% XNOR operation.
+%
+% The cut operation leaves little gaps between holes to keep the integrity
+% of the paper. The overcut makes sure that squares are solidly removed.
+
+/mm { 72 25.4 div mul } def
+
+/border-width 5 mm def
+/border-corner-radius 4 mm def % Radius of corners of border
+
+/top-hole-radius 2 mm def      % Mounting/aligning holes
+/top-hole-distance 5 mm def
+
+/dx 4 mm def
+/dy 4 mm def
+/gap 1 mm def
+
+/overcut 0.4 mm def   % Cutting a bit more to make sure cuts fall out.
+
+%% -- nothing needs to change beyond here
+
+/hole-w dx gap sub 2 div def
+/x-mark hole-w def
+/x-space hole-w def
+/hole-h dy gap sub def
+
+% w h radius
+/rounded-corner-box {
+   3 dict begin
+   /radius exch def
+   /height exch def
+   /width exch def
+
+   currentpoint
+   stroke   % need to flush state before gsave/grestore
+   gsave
+   translate
+   0 radius add 0 moveto
+   width radius sub 0 lineto
+   width radius sub 0 radius add radius -90 0 arc
+
+   width height radius sub lineto
+   width radius sub height radius sub radius 0 90 arc
+
+   0 radius add height lineto
+   0 radius add height radius sub radius 90 180 arc
+
+   0 0 radius add lineto
+   0 radius add 0 radius add radius 180 270 arc
+   closepath stroke
+   grestore
+   end
+} def
+
+% Given an array named /data, cut all the bits.
+% This is decomposing it into horizontal and vertial scanning lines to be
+% cut to minimize direction changes in the laser cutter.
+/cut-array {
+    % horizontal lines, upper line
+    0 1 height 1 sub {
+	/y exch def
+	0 y dy mul neg moveto
+	0 overcut 2 div neg rmoveto
+	/row-index y width mul def
+	% forward
+	0 1 width 1 sub {
+	    /x exch def
+	    /index x row-index add def
+	    data index get  % now 0 or 1
+	    1 eq {
+		x-space 0 rmoveto
+		x-mark 0 rlineto   % second half cut
+	    } {
+		x-space 0 rlineto  % first half cut
+		x-mark 0 rmoveto
+	    } ifelse
+	    gap 0 rmoveto
+	} for
+	% backward
+	0 hole-h neg overcut add rmoveto
+	0 1 width 1 sub {
+	    width 1 sub exch sub /x exch def
+	    /index x row-index add def
+	    data index get  % now 0 or 1
+	    gap neg 0 rmoveto
+	    0 eq {
+		x-space neg 0 rmoveto
+		x-mark neg 0 rlineto   % second half cut
+	    } {
+		x-space neg 0 rlineto  % first half cut
+		x-mark neg 0 rmoveto
+	    } ifelse
+	} for
+	stroke
+    } for
+
+    % vertical lines, negative
+    0 1 width 1 sub {
+	/x exch def
+	x dx mul overcut 2 div add 0 moveto
+	/x-offset x def
+
+	% negative
+	0 1 height 1 sub {
+	    /y exch def
+	    /index y width mul x-offset add def
+	    data index get
+	    0 eq {
+		0 hole-h neg rlineto
+	    } {
+		0 hole-h neg rmoveto
+	    } ifelse
+	    0 gap neg rmoveto
+	} for
+
+	% negative backwards
+	hole-w overcut sub 0 rmoveto
+	0 1 height 1 sub {
+	    height 1 sub exch sub /y exch def
+	    /index y width mul x-offset add def
+	    data index get
+	    0 gap rmoveto
+	    0 eq {
+		0 hole-h rlineto
+	    } {
+		0 hole-h rmoveto
+	    } ifelse
+	} for
+
+	overcut 0 rmoveto
+	% positive
+	0 1 height 1 sub {
+	    /y exch def
+	    /index y width mul x-offset add def
+	    data index get
+	    1 eq {
+		0 hole-h neg rlineto
+	    } {
+		0 hole-h neg rmoveto
+	    } ifelse
+	    0 gap neg rmoveto
+	} for
+
+	% positive backwards
+	hole-w overcut sub 0 rmoveto
+	0 1 height 1 sub {
+	    height 1 sub exch sub /y exch def
+	    /index y width mul x-offset add def
+	    data index get
+	    0 gap rmoveto
+	    1 eq {
+		0 hole-h rlineto
+	    } {
+		0 hole-h rmoveto
+	    } ifelse
+	} for
+	stroke
+    } for
+
+} def
+
+/page-setup {
+    25 bounding-box-height translate
+    0 setlinewidth
+} def
+
+/page-end {
+    /r top-hole-radius def
+    r hole-w add top-hole-distance moveto
+    r hole-w add r sub top-hole-distance r 0 360 arc stroke
+
+    width dx mul top-hole-distance moveto
+    width dx mul r sub top-hole-distance r 0 360 arc stroke
+
+    border-width neg height dy mul neg border-width sub moveto
+    width dx mul border-width 2 mul add
+    height dy mul border-width 2 mul add top-hole-distance add r add
+    border-corner-radius rounded-corner-box
+} def
