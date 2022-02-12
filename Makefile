@@ -1,7 +1,7 @@
 CXXFLAGS=-W -Wall -Wextra -Werror -O2 -std=c++11
 
 otp-image: otp-image.o ppm-reader.o
-	g++ $^ -o $@
+	$(CXX) $^ -o $@
 
 otp-image.o: bit-cut-template.ps.rawstring
 
